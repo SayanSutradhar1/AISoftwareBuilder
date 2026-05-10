@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "dev:client": "cd asb-frontend && npm run dev",
+    "dev:server": "cd asb-backend && npm run dev"
+  }
+}
