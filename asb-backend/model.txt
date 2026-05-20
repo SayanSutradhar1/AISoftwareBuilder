@@ -1,8 +1,0 @@
-User ---
-
-    _id
-    name
-    email
-    password
-    ....
-

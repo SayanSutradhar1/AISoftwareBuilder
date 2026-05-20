@@ -37,4 +37,14 @@ export class OllamaService {
 
     return JSON.parse(response.response);
   }
+
+  async generateText(prompt: string) {
+    const response = await this.ollama.generate({
+      model: 'gpt-oss:120b',
+      prompt: prompt,
+      stream: false,
+    });
+
+    return response.response;
+  }
 }

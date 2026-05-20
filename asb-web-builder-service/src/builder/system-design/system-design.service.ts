@@ -1,10 +1,16 @@
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { OllamaService } from '../../ollama/ollama.service';
 import { GenerateDesignDto } from './dto/generate-design.dto';
+import { SystemDesign, SystemDesignDocument } from './schemas/system-design.schema';
 
 @Injectable()
 export class SystemDesignService {
-  constructor(private readonly ollamaService: OllamaService) {}
+  constructor(
+    private readonly ollamaService: OllamaService,
+    @InjectModel(SystemDesign.name) private systemDesignModel: Model<SystemDesignDocument>,
+  ) {}
 
   async generateSystemDesign(dto: GenerateDesignDto) {
     const prompt = `
@@ -102,6 +108,51 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json 
 `;
 
     const systemDesignJSON = await this.ollamaService.generateJSON(prompt);
-    return systemDesignJSON;
+    
+    // Save to database
+    const savedDesign = new this.systemDesignModel(systemDesignJSON);
+    await savedDesign.save();
+    
+    return savedDesign;
+  }
+
+  async findAll() {
+    return this.systemDesignModel.find()
+      .select('serviceType description createdAt')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async findById(id: string) {
+    return this.systemDesignModel.findById(id).exec();
+  }
+
+  async getGeneratedFiles(id: string) {
+    const design = await this.systemDesignModel
+      .findById(id)
+      .select('generatedFiles isScaffolded')
+      .exec();
+    if (!design) return null;
+    return {
+      isScaffolded: design.isScaffolded,
+      generatedFiles: design.generatedFiles ?? {},
+    };
+  }
+
+  async saveGeneratedFile(id: string, filePath: string, content: string) {
+    const updateKey = `generatedFiles.${filePath}`;
+    return this.systemDesignModel
+      .findByIdAndUpdate(
+        id,
+        { $set: { [updateKey]: content } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async markScaffolded(id: string) {
+    return this.systemDesignModel
+      .findByIdAndUpdate(id, { $set: { isScaffolded: true } }, { new: true })
+      .exec();
   }
 }
