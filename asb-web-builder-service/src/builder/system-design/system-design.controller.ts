@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param, Patch } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Patch, Delete, NotFoundException } from '@nestjs/common';
 import { SystemDesignService } from './system-design.service';
 import { GenerateDesignDto } from './dto/generate-design.dto';
 
@@ -55,6 +55,18 @@ export class SystemDesignController {
   async markScaffolded(@Param('id') id: string) {
     await this.systemDesignService.markScaffolded(id);
     return { success: true };
+  }
+
+  @Delete(':id')
+  async deleteSystemDesign(@Param('id') id: string) {
+    const result = await this.systemDesignService.deleteById(id);
+    if (!result) {
+      throw new NotFoundException(`Project with ID ${id} not found`);
+    }
+    return {
+      success: true,
+      message: 'Project soft-deleted successfully',
+    };
   }
 }
 

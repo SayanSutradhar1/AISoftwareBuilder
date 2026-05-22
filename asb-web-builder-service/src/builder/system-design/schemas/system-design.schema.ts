@@ -5,6 +5,15 @@ export type SystemDesignDocument = SystemDesign & Document;
 
 @Schema({ timestamps: true })
 export class SystemDesign {
+  @Prop({ default: 'Unnamed Project' })
+  projectName: string;
+
+  @Prop()
+  serviceType: string;
+
+  @Prop()
+  description: string;
+
   @Prop({ required: true })
   detailedArchitectureText: string;
 
@@ -28,6 +37,9 @@ export class SystemDesign {
 
   @Prop({ type: MongooseSchema.Types.Mixed, default: {} })
   generatedFiles: Record<string, string>;
+
+  @Prop({ default: false })
+  isDeleted: boolean;
 }
 
 export const SystemDesignSchema = SchemaFactory.createForClass(SystemDesign);

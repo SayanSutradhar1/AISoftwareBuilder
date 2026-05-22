@@ -110,26 +110,31 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json 
     const systemDesignJSON = await this.ollamaService.generateJSON(prompt);
     
     // Save to database
-    const savedDesign = new this.systemDesignModel(systemDesignJSON);
+    const savedDesign = new this.systemDesignModel({
+      ...systemDesignJSON,
+      projectName: dto.projectName || 'Unnamed Project',
+      serviceType: dto.serviceType,
+      description: dto.description,
+    });
     await savedDesign.save();
     
     return savedDesign;
   }
 
   async findAll() {
-    return this.systemDesignModel.find()
-      .select('serviceType description createdAt')
+    return this.systemDesignModel.find({ isDeleted: { $ne: true } })
+      .select('projectName serviceType description createdAt')
       .sort({ createdAt: -1 })
       .exec();
   }
 
   async findById(id: string) {
-    return this.systemDesignModel.findById(id).exec();
+    return this.systemDesignModel.findOne({ _id: id, isDeleted: { $ne: true } }).exec();
   }
 
   async getGeneratedFiles(id: string) {
     const design = await this.systemDesignModel
-      .findById(id)
+      .findOne({ _id: id, isDeleted: { $ne: true } })
       .select('generatedFiles isScaffolded')
       .exec();
     if (!design) return null;
@@ -137,6 +142,14 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json 
       isScaffolded: design.isScaffolded,
       generatedFiles: design.generatedFiles ?? {},
     };
+  }
+
+  async deleteById(id: string) {
+    return this.systemDesignModel.findByIdAndUpdate(
+      id,
+      { $set: { isDeleted: true } },
+      { new: true },
+    ).exec();
   }
 
   async saveGeneratedFile(id: string, filePath: string, content: string) {
