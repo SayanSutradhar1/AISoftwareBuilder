@@ -23,8 +23,19 @@ Here are the requirements provided by the user:
 - Description: ${dto.description}
 - Data Flow: ${dto.dataFlow}
 
-Based on these requirements, generate a deeply comprehensive, low-level System Design Architecture. 
-Consider scalability, security, maintainability, and modern best practices (e.g., microservices vs monolith, state management paradigms, caching, indexing).
+=== CRITICAL RECTIFICATION & TECH STACK OBEDIENCE RULES ===
+1. STRICT USER TECH STACK OBEDIENCE: Analyze the description and data flow for any explicit requests regarding programming languages, frameworks (e.g. Next.js, NestJS, Express, React, Vite, Django, Laravel), state managers, databases (e.g. MongoDB, PostgreSQL), styling engines, or tools. You MUST strictly obey and construct the blueprint matching the user's specific choices. You are strictly forbidden from substituting other frameworks or technologies (e.g. if the user requests "Next.js", the scaffold MUST be Next.js and MUST NOT contain NestJS controllers or modules).
+2. AI AUTONOMY FOR INDIFFERENT LAYERS: If the user has not specified a framework, language, or database for a particular layer, you have full autonomy to select the most modern, optimized, industry-standard, and cohesive stack (e.g. React/Vite + Tailwind CSS + Node.js/Express + PostgreSQL) that solves the user's problem.
+
+=== DYNAMIC CANONICAL DIRECTORY CONVENTIONS ===
+The "folderStructure" array MUST NOT follow a rigid, hardcoded, or generic template. Instead, it must dynamically adapt and strictly conform to the official, industry-graded, and canonical directory structure of the chosen stack:
+- Next.js (App Router): Must use the standard App Router directory layout (\`src/app/layout.tsx\`, \`src/app/page.tsx\`, \`src/app/globals.css\`, route handlers under \`src/app/api/...\`, custom components under \`src/components/\`, config files like \`next.config.js\`, \`tailwind.config.js\`). Do NOT include NestJS modules or controllers.
+- NestJS: Must follow NestJS modular structural layout (e.g. \`src/auth/auth.module.ts\`, \`src/auth/auth.controller.ts\`, \`src/auth/auth.service.ts\`, config file \`nest-cli.json\`).
+- Vite + React: Must follow standard React SPA layout (e.g. \`src/components/\`, \`src/pages/\`, \`src/hooks/\`, \`src/main.tsx\`, \`vite.config.ts\`).
+- Node / Express: Must follow MVC controllers/routes structure (e.g. \`src/controllers/\`, \`src/routes/\`, \`src/models/\`, \`src/app.ts\`).
+- Django / Laravel / Spring Boot / Rails: Must strictly follow the official and standard industry-graded folder layout conventions of those ecosystems.
+
+Consider scalability, security, maintainability, and modern best practices (e.g., state management paradigms, indexing, caching strategies).
 
 Your response MUST be a valid JSON object matching the following structure exactly. 
 The internal modules will use the structured JSON, but 'detailedArchitectureText' will be rendered to the user as markdown.
@@ -33,21 +44,21 @@ The internal modules will use the structured JSON, but 'detailedArchitectureText
   "detailedArchitectureText": "A comprehensive, beautifully formatted Markdown text explaining the system architecture. Include sections for: Executive Summary, System Architecture Diagram (Mermaid.js), Core Technologies, Data Flow, Security Considerations, Scalability Strategy, and Deployment Architecture.",
   "folderStructure": [
     {
-      "path": "src/modules/auth/auth.controller.ts",
-      "type": "file",
-      "description": "Precise description of what this specific file does and what it contains."
+      "path": "Dynamic file path matching the standard industry-graded directory layout of the selected framework/language. For Next.js App Router, this must follow src/app/... format. For NestJS, it must follow src/... modular format.",
+      "type": "file | directory",
+      "description": "Precise details of what this file or folder handles in the system."
     }
-    // MUST be a fully comprehensive list covering every essential file and folder needed to bootstrap the project, including config files.
+    // Generate a fully comprehensive, production-ready directory structure mapping all necessary config files (e.g. package.json, tsconfig.json, next.config.js, tailwind.config.js, etc.), folders, and source files required to bootstrap this specific chosen stack.
   ],
   "frontend": {
-    "framework": "Specify exact framework and version (e.g., Next.js 14 App Router)",
+    "framework": "Specify exact framework and version (e.g., Next.js 14 App Router, React with Vite 5)",
     "styling": "Tailwind CSS, Styled Components, etc.",
     "stateManagement": "Specify libraries (Zustand, Redux Toolkit, React Query) and their exact use cases.",
     "routing": "Description of the routing tree and guarded routes.",
     "components": [
       {
         "name": "ComponentName",
-        "path": "src/components/.../ComponentName.tsx",
+        "path": "src/components/.../ComponentName.tsx (or corresponding standard path of the chosen framework)",
         "description": "Deep dive into component responsibilities.",
         "props": [
            {"name": "propName", "type": "string", "required": true}
@@ -58,7 +69,7 @@ The internal modules will use the structured JSON, but 'detailedArchitectureText
     ]
   },
   "backend": {
-    "framework": "NestJS, Express, etc.",
+    "framework": "NestJS, Express, Django, etc.",
     "architecturePattern": "Module-driven, MVC, CQRS, etc.",
     "database": "Exact DB technology (PostgreSQL, MongoDB)",
     "orm": "Prisma, TypeORM, Mongoose",
@@ -153,14 +164,20 @@ Output ONLY the JSON object. Do not include markdown formatting like \`\`\`json 
   }
 
   async saveGeneratedFile(id: string, filePath: string, content: string) {
-    const updateKey = `generatedFiles.${filePath}`;
-    return this.systemDesignModel
-      .findByIdAndUpdate(
-        id,
-        { $set: { [updateKey]: content } },
-        { new: true },
-      )
-      .exec();
+    const design = await this.systemDesignModel.findById(id).exec();
+    if (!design) return null;
+
+    if (!design.generatedFiles) {
+      design.generatedFiles = {};
+    }
+
+    // Set the property directly in Javascript (keys are treated as literal strings with dots)
+    design.generatedFiles[filePath] = content;
+
+    // Explicitly mark the mixed field as modified so Mongoose knows to persist it
+    design.markModified('generatedFiles');
+
+    return design.save();
   }
 
   async markScaffolded(id: string) {

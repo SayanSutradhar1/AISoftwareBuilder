@@ -33,6 +33,21 @@ interface SystemDesignPlaygroundProps {
   };
 }
 
+function flattenFiles(obj: any, prefix = ''): Record<string, string> {
+  const result: Record<string, string> = {};
+  if (!obj || typeof obj !== 'object') return result;
+
+  for (const [key, value] of Object.entries(obj)) {
+    const currentPath = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === 'string') {
+      result[currentPath] = value;
+    } else {
+      Object.assign(result, flattenFiles(value, currentPath));
+    }
+  }
+  return result;
+}
+
 export default function SystemDesignPlayground({ data }: SystemDesignPlaygroundProps) {
   const location = useLocation();
   const autoScaffoldTriggered = useRef(false);
@@ -70,9 +85,10 @@ export default function SystemDesignPlayground({ data }: SystemDesignPlaygroundP
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data) {
-            const { isScaffolded: scaffolded, generatedFiles: files } = json.data;
+            const { isScaffolded: scaffolded, generatedFiles: rawFiles } = json.data;
             if (scaffolded) {
               setIsScaffolded(true);
+              const files = flattenFiles(rawFiles);
               if (files && Object.keys(files).length > 0) {
                 setGeneratedFiles(files);
                 const paths = Object.keys(files);
@@ -134,14 +150,39 @@ export default function SystemDesignPlayground({ data }: SystemDesignPlaygroundP
     setUnsavedFiles(prev => ({ ...prev, [selectedFile]: true }));
   };
 
-  const handleSaveFile = () => {
+  const handleSaveFile = async () => {
     if (!selectedFile) return;
-    setUnsavedFiles(prev => ({ ...prev, [selectedFile]: false }));
-    setTerminalOutput(prev => [
-      ...prev,
-      `💾 [FILE SYSTEM] Successfully saved edits to: ${selectedFile.split('/').pop()}`,
-      ''
-    ]);
+    const content = generatedFiles[selectedFile];
+
+    try {
+      const res = await fetch(`http://localhost:3000/builder/system-design/${data._id}/save-file`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filePath: selectedFile, content }),
+      });
+
+      if (res.ok) {
+        setUnsavedFiles(prev => ({ ...prev, [selectedFile]: false }));
+        setTerminalOutput(prev => [
+          ...prev,
+          `💾 [FILE SYSTEM] Successfully saved edits to database: ${selectedFile.split('/').pop()}`,
+          ''
+        ]);
+      } else {
+        setTerminalOutput(prev => [
+          ...prev,
+          `❌ [FILE SYSTEM] Failed to save edits to database for: ${selectedFile.split('/').pop()}`,
+          ''
+        ]);
+      }
+    } catch (error) {
+      console.error('Failed to save file edits', error);
+      setTerminalOutput(prev => [
+        ...prev,
+        `❌ [FILE SYSTEM] Connection error while saving: ${selectedFile.split('/').pop()}`,
+        ''
+      ]);
+    }
   };
 
   const handleSearchReplace = (replaceAll: boolean) => {
@@ -279,51 +320,76 @@ export default function SystemDesignPlayground({ data }: SystemDesignPlaygroundP
     setTerminalLogs([]);
     setScaffoldProgress({ current: 0, total: filesToGenerate.length, currentFile: '' });
 
-    const newGeneratedFiles: Record<string, string> = { ...generatedFiles };
-    addTerminalLog(`[SYSTEM] Initializing scaffolding engine for Design ID: ${data._id}`);
+    addTerminalLog(`[SYSTEM] Initializing parallel scaffolding engine for Design ID: ${data._id}`);
     addTerminalLog(`[SYSTEM] Queueing ${filesToGenerate.length} code modules...`);
 
-    for (let i = 0; i < filesToGenerate.length; i++) {
-      const file = filesToGenerate[i];
-      setScaffoldProgress({ current: i + 1, total: filesToGenerate.length, currentFile: file.path });
-      setSelectedFile(file.path);
-      
-      const fileParts = file.path.split('/');
-      const fileName = fileParts[fileParts.length - 1];
-      addTerminalLog(`[GENERATOR] Synthesizing imports & schemas for ${fileName}`);
+    const CONCURRENCY_LIMIT = 3;
+    const queue = [...filesToGenerate];
+    let completedCount = 0;
+    const activeFiles = new Set<string>();
 
-      try {
-        const response = await fetch('http://localhost:3000/builder/generator/generate-file', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemDesignId: data._id,
-            filePath: file.path,
-          }),
-        });
+    const runWorker = async () => {
+      while (queue.length > 0) {
+        const file = queue.shift();
+        if (!file) continue;
 
-        if (response.ok) {
-          const resData = await response.json();
-          if (resData.success && resData.data) {
-            newGeneratedFiles[file.path] = resData.data.content;
-            setGeneratedFiles({ ...newGeneratedFiles });
-            setOpenTabs(prev => prev.includes(file.path) ? prev : [...prev, file.path]);
-            addTerminalLog(`[SUCCESS] Scaffolded: ${file.path} (${resData.data.content.length} chars)`);
-            // Persist to DB (fire-and-forget, non-blocking)
-            fetch(`http://localhost:3000/builder/system-design/${data._id}/save-file`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ filePath: file.path, content: resData.data.content }),
-            }).catch(() => { /* silent – will be retried on next scaffold */ });
+        const fileParts = file.path.split('/');
+        const fileName = fileParts[fileParts.length - 1];
+
+        // Track active compile files
+        activeFiles.add(fileName);
+        setScaffoldProgress(prev => ({
+          ...prev,
+          currentFile: `Compiling: ${Array.from(activeFiles).join(', ')}`,
+        }));
+        setSelectedFile(file.path);
+
+        addTerminalLog(`[GENERATOR] Synthesizing imports & schemas for ${fileName}`);
+
+        try {
+          const response = await fetch('http://localhost:3000/builder/generator/generate-file', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemDesignId: data._id,
+              filePath: file.path,
+            }),
+          });
+
+          if (response.ok) {
+            const resData = await response.json();
+            if (resData.success && resData.data) {
+              setGeneratedFiles(prev => ({ ...prev, [file.path]: resData.data.content }));
+              setOpenTabs(prev => prev.includes(file.path) ? prev : [...prev, file.path]);
+              addTerminalLog(`[SUCCESS] Scaffolded: ${file.path} (${resData.data.content.length} chars)`);
+
+              // Persist to DB (fire-and-forget, non-blocking)
+              fetch(`http://localhost:3000/builder/system-design/${data._id}/save-file`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filePath: file.path, content: resData.data.content }),
+              }).catch(() => { /* silent – will be retried on next scaffold */ });
+            }
+          } else {
+            addTerminalLog(`[ERROR] Failed to compile: ${file.path}`);
           }
-        } else {
-          addTerminalLog(`[ERROR] Failed to compile: ${file.path}`);
+        } catch (error) {
+          addTerminalLog(`[ERROR] Network timeout on: ${file.path}`);
+          console.error(`Error generating ${file.path}:`, error);
+        } finally {
+          activeFiles.delete(fileName);
+          completedCount++;
+          setScaffoldProgress(prev => ({
+            ...prev,
+            current: completedCount,
+            currentFile: activeFiles.size > 0 ? `Compiling: ${Array.from(activeFiles).join(', ')}` : 'Wrapping up...',
+          }));
         }
-      } catch (error) {
-        addTerminalLog(`[ERROR] Network timeout on: ${file.path}`);
-        console.error(`Error generating ${file.path}:`, error);
       }
-    }
+    };
+
+    const workers = Array.from({ length: Math.min(CONCURRENCY_LIMIT, filesToGenerate.length) }, runWorker);
+    await Promise.all(workers);
 
     setIsScaffolding(false);
     setScaffoldProgress(prev => ({ ...prev, currentFile: 'Scaffolding Complete!' }));

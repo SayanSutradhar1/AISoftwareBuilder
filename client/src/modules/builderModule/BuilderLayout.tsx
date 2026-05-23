@@ -59,7 +59,7 @@ export default function BuilderLayout() {
     }
   };
 
-  const getDerivedTitle = (desc: string, type: string) => {
+  const getDerivedTitle = (desc: string, _type: string) => {
     if (!desc) return 'Untitled Project';
     const words = desc.split(' ').filter(Boolean);
     if (words.length === 0) return 'Untitled Project';
@@ -94,7 +94,7 @@ export default function BuilderLayout() {
             >
               <Layers className="text-white w-4 h-4" />
             </motion.div>
-            <span className="font-bold text-sm tracking-tight text-white">ASB<span className="text-indigo-400">.AI</span></span>
+            <span className="font-bold text-sm tracking-tight text-white">ARCHITEX<span className="text-indigo-400">.AI</span></span>
           </Link>
           <div className="h-4 w-px bg-white/10" />
           <span className="text-xs text-gray-400 flex items-center gap-1.5 font-semibold">

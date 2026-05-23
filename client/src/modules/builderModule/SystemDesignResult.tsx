@@ -1,5 +1,4 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import JSZip from 'jszip';
 import {
   BookOpen,
   Check,
@@ -27,7 +26,7 @@ import {
   Network,
   HardDrive
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useNavigate } from 'react-router-dom';
 import rehypeRaw from 'rehype-raw';
@@ -45,6 +44,21 @@ interface SystemDesignResultProps {
     deployment: any;
     isScaffolded?: boolean;
   };
+}
+
+function flattenFiles(obj: any, prefix = ''): Record<string, string> {
+  const result: Record<string, string> = {};
+  if (!obj || typeof obj !== 'object') return result;
+
+  for (const [key, value] of Object.entries(obj)) {
+    const currentPath = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === 'string') {
+      result[currentPath] = value;
+    } else {
+      Object.assign(result, flattenFiles(value, currentPath));
+    }
+  }
+  return result;
 }
 
 export default function SystemDesignResult({ data }: SystemDesignResultProps) {
@@ -86,103 +100,37 @@ export default function SystemDesignResult({ data }: SystemDesignResultProps) {
       setIsDeleting(false);
     }
   };
-  const [isScaffolding, setIsScaffolding] = useState(false);
-  const [scaffoldProgress, setScaffoldProgress] = useState({ current: 0, total: 0, currentFile: '' });
+  const [isScaffolding] = useState(false);
+  const [scaffoldProgress] = useState({ current: 0, total: 0, currentFile: '' });
   const [generatedFiles, setGeneratedFiles] = useState<Record<string, string>>({});
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
+  const [terminalLogs] = useState<string[]>([]);
 
-  const addTerminalLog = (log: string) => {
-    setTerminalLogs(prev => [...prev.slice(-8), log]);
-  };
-
-  const handleScaffold = async () => {
-    if (!data._id) {
-      alert('System Design ID is missing. Please generate the design again.');
-      return;
-    }
-
-    const filesToGenerate = data.folderStructure.filter(node => node.type === 'file');
-    if (filesToGenerate.length === 0) return;
-
-    setIsScaffolding(true);
-    setTerminalLogs([]);
-    setScaffoldProgress({ current: 0, total: filesToGenerate.length, currentFile: '' });
-    setActiveTab('code');
-
-    const newGeneratedFiles: Record<string, string> = { ...generatedFiles };
-    addTerminalLog(`[SYSTEM] Initializing scaffolding engine for Design ID: ${data._id}`);
-    addTerminalLog(`[SYSTEM] Queueing ${filesToGenerate.length} code modules...`);
-
-    for (let i = 0; i < filesToGenerate.length; i++) {
-      const file = filesToGenerate[i];
-      setScaffoldProgress({ current: i + 1, total: filesToGenerate.length, currentFile: file.path });
-      setSelectedFile(file.path);
-
-      const fileParts = file.path.split('/');
-      const fileName = fileParts[fileParts.length - 1];
-      addTerminalLog(`[GENERATOR] Synthesizing imports & schemas for ${fileName}`);
-
+  // Load previously persisted generated files from the database
+  useEffect(() => {
+    async function loadPersistedFiles() {
+      if (!data._id) return;
       try {
-        const response = await fetch('http://localhost:3000/builder/generator/generate-file', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemDesignId: data._id,
-            filePath: file.path,
-          }),
-        });
-
-        if (response.ok) {
-          const resData = await response.json();
-          if (resData.success && resData.data) {
-            newGeneratedFiles[file.path] = resData.data.content;
-            setGeneratedFiles({ ...newGeneratedFiles });
-            addTerminalLog(`[SUCCESS] Scaffolded: ${file.path} (${resData.data.content.length} chars)`);
+        const res = await fetch(`http://localhost:3000/builder/system-design/${data._id}/generated-files`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            const { generatedFiles: rawFiles } = json.data;
+            const files = flattenFiles(rawFiles);
+            if (files && Object.keys(files).length > 0) {
+              setGeneratedFiles(files);
+            }
           }
-        } else {
-          addTerminalLog(`[ERROR] Failed to compile: ${file.path}`);
         }
-      } catch (error) {
-        addTerminalLog(`[ERROR] Network timeout on: ${file.path}`);
-        console.error(`Error generating ${file.path}:`, error);
+      } catch (e) {
+        console.error('Failed to load persisted files in results view', e);
       }
     }
+    loadPersistedFiles();
+  }, [data._id]);
 
-    setIsScaffolding(false);
-    setScaffoldProgress(prev => ({ ...prev, currentFile: 'Scaffolding Complete!' }));
-    addTerminalLog(`[FINISHED] All models initialized successfully! Scaffold completed.`);
-  };
-
-  const handleExportZip = async () => {
-    if (Object.keys(generatedFiles).length === 0) {
-      alert("No code has been generated yet. Please start scaffolding first.");
-      return;
-    }
-
-    const zip = new JSZip();
-
-    Object.entries(generatedFiles).forEach(([filePath, content]) => {
-      const cleanPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
-      zip.file(cleanPath, content);
-    });
-
-    try {
-      const content = await zip.generateAsync({ type: 'blob' });
-      const url = window.URL.createObjectURL(content);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `project-${data._id}-code.zip`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error('Error generating zip:', error);
-      alert('Failed to generate zip file.');
-    }
-  };
+  // Cleaned up unused helper functions (scaffolding and zip exports are managed in SystemDesignPlayground)
 
   const copyToClipboard = () => {
     if (selectedFile && generatedFiles[selectedFile]) {

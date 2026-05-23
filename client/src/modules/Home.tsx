@@ -94,7 +94,7 @@ const Home = () => {
             >
               <Code2 className="text-white w-6 h-6" />
             </motion.div>
-            <span className="font-bold text-2xl tracking-tighter">ASB<span className="text-primary">.AI</span></span>
+            <span className="font-bold text-2xl tracking-tighter">ARCHITEX<span className="text-primary">.AI</span></span>
           </div>
           
           <div className="hidden lg:flex items-center gap-10 text-[13px] font-medium uppercase tracking-widest text-white/60">
@@ -180,8 +180,8 @@ const Home = () => {
                 transition={{ duration: 1, delay: 0.8 }}
                 className="mt-24 relative max-w-6xl mx-auto"
               >
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-blue-600 rounded-[2.5rem] blur opacity-25" />
-                <div className="relative bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-4 shadow-2xl overflow-hidden aspect-[21/9]">
+                <div className="absolute -inset-1 bg-linear-to-r from-primary to-blue-600 rounded-[2.5rem] blur opacity-25" />
+                <div className="relative bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-4 shadow-2xl overflow-hidden aspect-21/9">
                   <div className="flex items-center gap-2 mb-6 border-b border-white/5 pb-4">
                     <div className="flex gap-1.5">
                       <div className="w-3 h-3 rounded-full bg-red-500/20" />
@@ -189,7 +189,7 @@ const Home = () => {
                       <div className="w-3 h-3 rounded-full bg-green-500/20" />
                     </div>
                     <div className="ml-4 px-3 py-1 rounded-md bg-white/5 text-[10px] text-white/30 font-mono">
-                      asb-ai-workspace/project-delta
+                      architex-workspace/project-delta
                     </div>
                   </div>
                   <div className="grid grid-cols-12 gap-6 h-full">
@@ -214,7 +214,7 @@ const Home = () => {
         </section>
 
         {/* Logo Cloud / Tech Stack */}
-        <section className="py-20 border-y border-white/5 bg-white/[0.02]">
+        <section className="py-20 border-y border-white/5 bg-white/2">
           <div className="container mx-auto px-6">
             <p className="text-center text-white/30 text-xs font-bold uppercase tracking-[0.3em] mb-12">Empowering Modern Tech Stacks</p>
             <div className="flex flex-wrap justify-center items-center gap-16 md:gap-24 opacity-40 grayscale">
@@ -239,7 +239,7 @@ const Home = () => {
                 </h2>
               </div>
               <p className="text-white/40 max-w-sm text-lg leading-relaxed">
-                ASB isn't just a code generator; it's a complete ecosystem for digital creation.
+                Architex isn't just a code generator; it's a complete ecosystem for digital creation.
               </p>
             </div>
 
@@ -247,7 +247,7 @@ const Home = () => {
               {/* Feature 1: Large Box */}
               <motion.div 
                 whileHover={{ scale: 0.98 }}
-                className="md:col-span-2 md:row-span-2 relative group overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-primary/20 to-purple-900/20 border border-white/10 p-10 flex flex-col justify-end"
+                className="md:col-span-2 md:row-span-2 relative group overflow-hidden rounded-[2.5rem] bg-linear-to-br from-primary/20 to-purple-900/20 border border-white/10 p-10 flex flex-col justify-end"
               >
                 <div className="absolute top-10 right-10 p-6 rounded-full bg-primary/20 backdrop-blur-xl border border-primary/30 group-hover:rotate-12 transition-transform">
                   <MessageSquare className="w-12 h-12 text-primary" />
@@ -285,7 +285,7 @@ const Home = () => {
               {/* Feature 4: Normal Box */}
               <motion.div 
                 whileHover={{ scale: 0.98 }}
-                className="relative group overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-blue-600/20 to-cyan-500/10 border border-white/10 p-8 flex flex-col justify-between"
+                className="relative group overflow-hidden rounded-[2.5rem] bg-linear-to-br from-blue-600/20 to-cyan-500/10 border border-white/10 p-8 flex flex-col justify-between"
               >
                 <Zap className="w-10 h-10 text-cyan-400 animate-pulse" />
                 <div>
@@ -298,7 +298,7 @@ const Home = () => {
         </section>
 
         {/* The Engine / Process Section */}
-        <section id="engine" className="py-32 bg-white/[0.01] relative overflow-hidden">
+        <section id="engine" className="py-32 bg-white/1 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-1/2 h-full bg-primary/5 blur-[120px] -z-10" />
           <div className="container mx-auto px-6">
             <div className="text-center mb-24">
@@ -308,7 +308,7 @@ const Home = () => {
 
             <div className="grid md:grid-cols-3 gap-16 relative">
               {/* Connecting Lines (Desktop) */}
-              <div className="hidden md:block absolute top-1/2 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-y-1/2 -z-10" />
+              <div className="hidden md:block absolute top-1/2 left-0 w-full h-[2px] bg-linear-to-r from-transparent via-white/10 to-transparent -translate-y-1/2 -z-10" />
               
               <div className="text-center group">
                 <div className="w-24 h-24 rounded-[2rem] bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-8 group-hover:border-primary/50 transition-all group-hover:scale-110">
@@ -340,7 +340,7 @@ const Home = () => {
         {/* Showcase / Portfolio */}
         <section id="showcase" className="py-32">
           <div className="container mx-auto px-6 text-center mb-20">
-            <h2 className="text-5xl font-black mb-6">BUILT WITH ASB</h2>
+            <h2 className="text-5xl font-black mb-6">BUILT WITH ARCHITEX</h2>
             <p className="text-white/40 text-xl max-w-2xl mx-auto">See what others are building at light speed.</p>
           </div>
 
@@ -387,7 +387,7 @@ const Home = () => {
                   <span className="text-6xl font-black">$0</span>
                   <span className="text-white/30 ml-2">/MO</span>
                 </div>
-                <ul className="space-y-4 mb-10 flex-grow">
+                <ul className="space-y-4 mb-10 grow">
                   {["3 Projects", "Static Export", "Basic AI Chat", "Community Access"].map(f => (
                     <li key={f} className="flex items-center gap-3 text-white/60"><CheckCircle2 className="w-5 h-5 text-primary" /> {f}</li>
                   ))}
@@ -403,7 +403,7 @@ const Home = () => {
                   <span className="text-6xl font-black text-white">$49</span>
                   <span className="text-white/70 ml-2">/MO</span>
                 </div>
-                <ul className="space-y-4 mb-10 flex-grow">
+                <ul className="space-y-4 mb-10 grow">
                   {["Unlimited Projects", "Dynamic App Generation", "Backend Orchestration", "Custom Domains", "Priority Support"].map(f => (
                     <li key={f} className="flex items-center gap-3 text-white font-medium"><CheckCircle2 className="w-5 h-5 text-white" /> {f}</li>
                   ))}
@@ -418,7 +418,7 @@ const Home = () => {
                   <span className="text-6xl font-black">$199</span>
                   <span className="text-white/30 ml-2">/MO</span>
                 </div>
-                <ul className="space-y-4 mb-10 flex-grow">
+                <ul className="space-y-4 mb-10 grow">
                   {["Everything in Pro", "System Design Blueprints", "Private AI Models", "White-label Output", "24/7 Dedicated Team"].map(f => (
                     <li key={f} className="flex items-center gap-3 text-white/60"><CheckCircle2 className="w-5 h-5 text-primary" /> {f}</li>
                   ))}
@@ -436,19 +436,19 @@ const Home = () => {
             <div className="space-y-4">
               <FAQItem 
                 question="What kind of applications can I build?"
-                answer="ASB supports everything from simple React landing pages to complex full-stack applications with Node.js backends, MongoDB/PostgreSQL schemas, and integrated authentication. If it can be coded, ASB can build it."
+                answer="Architex supports everything from simple React landing pages to complex full-stack applications with Node.js backends, MongoDB/PostgreSQL schemas, and integrated authentication. If it can be coded, Architex can build it."
               />
               <FAQItem 
-                question="Do I own the code generated by ASB?"
+                question="Do I own the code generated by Architex?"
                 answer="Absolutely. All code generated is 100% yours. You can export it, modify it, and host it anywhere you like with zero vendor lock-in."
               />
               <FAQItem 
                 question="How does the AI handle complex system designs?"
-                answer="ASB uses a multi-agent orchestration system. One agent acts as the Lead Architect, another as the Security Expert, and another as the Senior Developer. They collaborate to ensure the output is robust and scalable."
+                answer="Architex uses a multi-agent orchestration system. One agent acts as the Lead Architect, another as the Security Expert, and another as the Senior Developer. They collaborate to ensure the output is robust and scalable."
               />
               <FAQItem 
                 question="Can I integrate my own APIs?"
-                answer="Yes! You can provide documentation or specs for your existing APIs, and ASB will generate the integration logic automatically."
+                answer="Yes! You can provide documentation or specs for your existing APIs, and Architex will generate the integration logic automatically."
               />
             </div>
           </div>
@@ -460,7 +460,7 @@ const Home = () => {
             <motion.div
               whileInView={{ scale: [0.9, 1], opacity: [0, 1] }}
               viewport={{ once: true }}
-              className="max-w-5xl mx-auto rounded-[4rem] bg-gradient-to-r from-primary via-purple-600 to-blue-600 p-[2px]"
+              className="max-w-5xl mx-auto rounded-[4rem] bg-linear-to-r from-primary via-purple-600 to-blue-600 p-[2px]"
             >
               <div className="bg-[#050505] rounded-[3.9rem] py-20 px-10">
                 <h2 className="text-5xl md:text-7xl font-black mb-10 leading-tight">
@@ -489,7 +489,7 @@ const Home = () => {
                 <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                   <Code2 className="text-white w-5 h-5" />
                 </div>
-                <span className="font-bold text-2xl tracking-tighter">ASB.AI</span>
+                <span className="font-bold text-2xl tracking-tighter">ARCHITEX.AI</span>
               </div>
               <p className="text-white/40 max-w-sm text-lg leading-relaxed mb-10">
                 Revolutionizing software development through autonomous AI orchestration and neural code generation.
@@ -529,7 +529,7 @@ const Home = () => {
           </div>
           
           <div className="flex flex-col md:flex-row justify-between items-center pt-12 border-t border-white/5 text-white/20 text-xs font-black uppercase tracking-[0.2em]">
-            <p>© 2026 ASB AI SYSTEMS. BEYOND LIMITS.</p>
+            <p>© 2026 ARCHITEX AI SYSTEMS. BEYOND LIMITS.</p>
             <div className="flex gap-10 mt-8 md:mt-0">
               <a href="#" className="hover:text-white transition-colors">Status</a>
               <a href="#" className="hover:text-white transition-colors">Security</a>
